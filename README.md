@@ -1,5 +1,7 @@
 # go-wg-wrapper
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/aschmidt75/go-wg-wrapper)](https://goreportcard.com/report/github.com/aschmidt75/go-wg-wrapper)
+
 This is a convenience wrapper around
 
 * `/sbin/ip`

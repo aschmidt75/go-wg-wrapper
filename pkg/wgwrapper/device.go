@@ -50,31 +50,34 @@ func (wg wgwrapper) AddInterface(intf WireguardInterface) error {
 		return err
 	}
 
-	// Assign IP if not yet present
-	a, err := i.Addrs()
-	if err != nil {
-		return err
-	}
-	if len(a) == 0 && intf.IP != nil {
-		cmd := exec.Command("/sbin/ip", "address", "add", "dev", intf.InterfaceName, intf.IP.String())
-		var stdout, stderr bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-		err := cmd.Run()
+	// Assign IP if desired and not yet present
+	if intf.IP != nil {
+		a, err := i.Addrs()
 		if err != nil {
 			return err
 		}
-		_, errStr := string(stdout.Bytes()), string(stderr.Bytes())
-		if len(errStr) > 0 {
-			e := fmt.Sprintf("/sbin/ip reported: %s", errStr)
+		if len(a) == 0 {
+			cmd := exec.Command("/sbin/ip", "address", "add", "dev", intf.InterfaceName, intf.IP.String())
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout = &stdout
+			cmd.Stderr = &stderr
+			err := cmd.Run()
+			if err != nil {
+				return err
+			}
+			_, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+			if len(errStr) > 0 {
+				e := fmt.Sprintf("/sbin/ip reported: %s", errStr)
+				return errors.New(e)
+			}
+		}
+
+		a, err = i.Addrs()
+		if len(a) == 0 {
+			e := fmt.Sprintf("unable to add ip address %s to interface %s: %s", intf.IP.String(), intf.InterfaceName, err)
 			return errors.New(e)
 		}
-	}
 
-	a, err = i.Addrs()
-	if len(a) == 0 {
-		e := fmt.Sprintf("unable to add ip address %s to interface %s: %s", intf.IP.String(), intf.InterfaceName, err)
-		return errors.New(e)
 	}
 
 	return nil

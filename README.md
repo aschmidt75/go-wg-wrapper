@@ -23,7 +23,7 @@ This builds on Linux only because it is intended primarily for linux only.
 
 # Test
 
-e.g. use multipass to launch an ubuntu lts named wgtest:
+e.g. use [multipass](https://multipass.run/) to launch an ubuntu lts named wgtest:
 
 ```bash
 $ multipass launch -c 1 -m 512M -n wgtest --cloud-init scripts/multipass-cloudinit.yaml lts

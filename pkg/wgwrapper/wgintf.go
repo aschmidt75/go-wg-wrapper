@@ -14,10 +14,18 @@ type WireguardInterface struct {
 	PublicKey     string // public key of interface
 }
 
-// NewWireguardInterface creates a new WireguardInterface
+// NewWireguardInterface creates a new WireguardInterface with a given name and ip
 func NewWireguardInterface(interfaceName string, ip net.IP) WireguardInterface {
 	return WireguardInterface{
 		InterfaceName: interfaceName,
 		IP:            ip,
+	}
+}
+
+// NewWireguardInterface creates a new WireguardInterface with a given name but
+// without an address assignement
+func NewWireguardInterfaceNoAddr(interfaceName string) WireguardInterface {
+	return WireguardInterface{
+		InterfaceName: interfaceName,
 	}
 }

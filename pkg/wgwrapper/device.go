@@ -55,7 +55,7 @@ func (wg wgwrapper) AddInterface(intf WireguardInterface) error {
 	if err != nil {
 		return err
 	}
-	if len(a) == 0 {
+	if len(a) == 0 && intf.IP != nil {
 		cmd := exec.Command("/sbin/ip", "address", "add", "dev", intf.InterfaceName, intf.IP.String())
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout

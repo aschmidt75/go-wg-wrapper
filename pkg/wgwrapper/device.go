@@ -51,33 +51,65 @@ func (wg wgwrapper) AddInterface(intf WireguardInterface) error {
 	}
 
 	// Assign IP if desired and not yet present
-	if intf.IP != nil {
-		a, err := i.Addrs()
+	a, err := i.Addrs()
+	if err != nil {
+		return err
+	}
+	if len(a) == 0 {
+		cmd := exec.Command("/sbin/ip", "address", "add", "dev", intf.InterfaceName, intf.IP.String())
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err := cmd.Run()
 		if err != nil {
 			return err
 		}
-		if len(a) == 0 {
-			cmd := exec.Command("/sbin/ip", "address", "add", "dev", intf.InterfaceName, intf.IP.String())
-			var stdout, stderr bytes.Buffer
-			cmd.Stdout = &stdout
-			cmd.Stderr = &stderr
-			err := cmd.Run()
-			if err != nil {
-				return err
-			}
-			_, errStr := string(stdout.Bytes()), string(stderr.Bytes())
-			if len(errStr) > 0 {
-				e := fmt.Sprintf("/sbin/ip reported: %s", errStr)
-				return errors.New(e)
-			}
-		}
-
-		a, err = i.Addrs()
-		if len(a) == 0 {
-			e := fmt.Sprintf("unable to add ip address %s to interface %s: %s", intf.IP.String(), intf.InterfaceName, err)
+		_, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+		if len(errStr) > 0 {
+			e := fmt.Sprintf("/sbin/ip reported: %s", errStr)
 			return errors.New(e)
 		}
+	}
 
+	a, err = i.Addrs()
+	if len(a) == 0 {
+		e := fmt.Sprintf("unable to add ip address %s to interface %s: %s", intf.IP.String(), intf.InterfaceName, err)
+		return errors.New(e)
+	}
+
+	return nil
+}
+
+// AddInterfaceNoAddr is similar to AddInterface with the exception that no
+// IP address is added to the interface
+func (wg wgwrapper) AddInterfaceNoAddr(intf WireguardInterface) error {
+	i, err := net.InterfaceByName(intf.InterfaceName)
+
+	if i == nil || err != nil {
+		// create wireguard interface
+		var cmd *exec.Cmd
+
+		cmd = exec.Command("/sbin/ip", "link", "add", "dev", intf.InterfaceName, "type", "wireguard")
+
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err := cmd.Run()
+		if err != nil {
+			e := fmt.Sprintf("/sbin/ip reported: %s", err)
+			return errors.New(e)
+		}
+		_, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+		if len(errStr) > 0 {
+			e := fmt.Sprintf("/sbin/ip reported: %s", errStr)
+			return errors.New(e)
+		}
+	}
+
+	// try to get this intf via netlink
+	i, err = net.InterfaceByName(intf.InterfaceName)
+	if err != nil {
+		return err
 	}
 
 	return nil

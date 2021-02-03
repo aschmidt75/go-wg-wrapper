@@ -12,6 +12,10 @@ type WireguardWrapper interface {
 	// (name, ip)
 	AddInterface(intf WireguardInterface) error
 
+	// AddInterfaceNoAddr is similar to AddInterface with the exception that no
+	// IP address is added to the interface
+	AddInterfaceNoAddr(intf WireguardInterface) error
+
 	// DeleteInterface downs and deletes the interface
 	DeleteInterface(intf WireguardInterface) error
 

@@ -14,7 +14,10 @@ func main() {
 	//fmt.Printf("%#v\n", wg)
 
 	// set up a new wireguard interface struct w/ some defaults
-	wgi := wgwrapper.NewWireguardInterface("wg-wrap-0", net.IPv4(10, 99, 99, 99))
+	wgi := wgwrapper.NewWireguardInterface("wg-wrap-0", net.IPNet{
+		IP:   net.IPv4(10, 99, 99, 99),
+		Mask: net.CIDRMask(24, 32),
+	})
 	//fmt.Printf("%#v\n", wgi)
 
 	// add the interface.

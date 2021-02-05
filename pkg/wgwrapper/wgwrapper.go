@@ -45,6 +45,9 @@ type WireguardWrapper interface {
 
 	// IteratePeers walks over the current list of peers of an interface
 	IteratePeers(intf WireguardInterface, it WireguardPeerIterator) error
+
+	// SetRoute checks if there is a route on given interface to network. If not, adds it. all using /sbin/ip
+	SetRoute(intf WireguardInterface, networkCIDR string) error
 }
 
 // New sets up a new WireguardWrapper

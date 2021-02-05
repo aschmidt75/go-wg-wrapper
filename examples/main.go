@@ -8,6 +8,10 @@ import (
 	"github.com/aschmidt75/go-wg-wrapper/pkg/wgwrapper"
 )
 
+// Example setup
+// uses all functions of wgwraper. Caution: creates, modifies wireguard interface and
+// system routes.
+
 func main() {
 	// get a new wrapper
 	wg := wgwrapper.New()
@@ -78,6 +82,15 @@ func main() {
 	wg.IteratePeers(wgi, func(p wgwrapper.WireguardPeer) {
 		fmt.Printf("Peer: %s %s:%d\n", p.Pubkey, p.RemoteEndpointIP, p.ListenPort)
 	})
+
+	// set the route
+	err = wg.SetRoute(wgi, "10.99.99.99/32")
+	if err != nil {
+		panic(err)
+	}
+
+	out, err = exec.Command("/sbin/ip", "ro", "show", "dev", "wg-wrap-0").Output()
+	println(string(out))
 
 	// delete the interface
 	err = wg.DeleteInterface(wgi)

@@ -15,14 +15,12 @@ import (
 func main() {
 	// get a new wrapper
 	wg := wgwrapper.New()
-	//fmt.Printf("%#v\n", wg)
 
 	// set up a new wireguard interface struct w/ some defaults
 	wgi := wgwrapper.NewWireguardInterface("wg-wrap-0", net.IPNet{
 		IP:   net.IPv4(10, 99, 99, 99),
 		Mask: net.CIDRMask(24, 32),
 	})
-	//fmt.Printf("%#v\n", wgi)
 
 	// add the interface.
 	err := wg.AddInterface(wgi)
@@ -54,6 +52,7 @@ func main() {
 		panic(err)
 	}
 
+	// we're able to show its address
 	out, err = exec.Command("/sbin/ip", "addr", "show", "wg-wrap-0").Output()
 	println(string(out))
 
@@ -92,12 +91,20 @@ func main() {
 	out, err = exec.Command("/sbin/ip", "ro", "show", "dev", "wg-wrap-0").Output()
 	println(string(out))
 
-	// delete the interface
+	// show the default interface
+	defaultInterface, err := wg.DefaultRouteInterface()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Default interface is: %s\n", defaultInterface)
+
+	// delete the wireguard interface
 	err = wg.DeleteInterface(wgi)
 	if err != nil {
 		panic(err)
 	}
 
+	// it's not around anymore
 	ex, _ = wg.HasInterface(wgi)
 	if ex {
 		panic("Error: Interface exists but should have been deleted.")

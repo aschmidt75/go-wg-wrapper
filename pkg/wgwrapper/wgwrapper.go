@@ -48,6 +48,9 @@ type WireguardWrapper interface {
 
 	// SetRoute checks if there is a route on given interface to network. If not, adds it. all using /sbin/ip
 	SetRoute(intf WireguardInterface, networkCIDR string) error
+
+	// DefaultRouteInterface returns the interface name behind the default route.
+	DefaultRouteInterface() (string, error)
 }
 
 // New sets up a new WireguardWrapper

@@ -21,7 +21,11 @@ func newWGIntf() WireguardInterface {
 	for i := range b {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
-	return NewWireguardInterface(fmt.Sprintf("wgtst-%s", string(b)), net.IPv4(10, 99, 99, 99))
+
+	return NewWireguardInterface(fmt.Sprintf("wgtst-%s", string(b)), net.IPNet{
+		IP:   net.IPv4(10, 99, 99, 99),
+		Mask: net.CIDRMask(32, 32),
+	})
 }
 
 func TestAddDeleteHasInterface(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net"
+	"time"
 
 	wgctrl "golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -13,11 +14,12 @@ import (
 
 // WireguardPeer is a single wireguard peer
 type WireguardPeer struct {
-	RemoteEndpointIP string
-	ListenPort       int
-	Pubkey           string
-	AllowedIPs       []net.IPNet
-	Psk              *string
+	RemoteEndpointIP            string
+	ListenPort                  int
+	Pubkey                      string
+	AllowedIPs                  []net.IPNet
+	Psk                         *string
+	PersistentKeepaliveInterval time.Duration
 }
 
 // AddPeer adds a new peer to an existing interface
@@ -53,7 +55,7 @@ func (wg wgwrapper) AddPeer(intf WireguardInterface, peer WireguardPeer) (bool, 
 	}
 
 	// process peer
-	ep, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", peer.RemoteEndpointIP, peer.ListenPort))
+	ep, err := net.ResolveUDPAddr("udp", net.JoinHostPort(peer.RemoteEndpointIP, fmt.Sprintf("%d", peer.ListenPort)))
 	if err != nil {
 		return false, err
 	}
@@ -62,11 +64,12 @@ func (wg wgwrapper) AddPeer(intf WireguardInterface, peer WireguardPeer) (bool, 
 		ReplacePeers: false,
 		Peers: []wgtypes.PeerConfig{
 			wgtypes.PeerConfig{
-				PublicKey:    pk,
-				Remove:       false,
-				PresharedKey: &pskAsKey,
-				Endpoint:     ep,
-				AllowedIPs:   peer.AllowedIPs,
+				PublicKey:                   pk,
+				Remove:                      false,
+				PresharedKey:                &pskAsKey,
+				Endpoint:                    ep,
+				AllowedIPs:                  peer.AllowedIPs,
+				PersistentKeepaliveInterval: &peer.PersistentKeepaliveInterval,
 			},
 		},
 	}
